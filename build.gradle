@@ -130,9 +130,24 @@ task checkDocker() {
 	}
 }
 
+task stopDocker(type: Exec) {
+	ignoreExitValue true
+
+	commandLine 'docker', 'stop', "com-liferay-adaptive-media"
+}
+
+task rmDocker(type: Exec) {
+	dependsOn stopDocker
+
+	ignoreExitValue true
+
+	commandLine 'docker', 'rm', "com-liferay-adaptive-media"
+}
+
 task runDocker(type: Exec) {
 	dependsOn createTempDir
 	dependsOn loginDocker
+	dependsOn rmDocker
 
 	def javaOpts = project.getProperty('javaOpts');
 
@@ -153,6 +168,8 @@ task runDocker(type: Exec) {
 			'-d',
 			'--name', "com-liferay-adaptive-media",
 			'liferay/liferay-de:20170203072957391859963-db'
+
+	finalizedBy checkDocker
 }
 
 configure(subprojects.findAll {!it.childProjects}) {
