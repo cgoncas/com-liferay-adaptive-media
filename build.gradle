@@ -21,6 +21,25 @@ apply plugin: "com.github.kt3k.coveralls"
 apply plugin: "com.liferay.app.defaults.plugin"
 apply plugin: "jacoco"
 
+task runDocker(type: Exec) {
+	def javaOpts = project.getProperty('javaOpts');
+
+	if (project.hasProperty('debug')) {
+		javaOpts += ' ' + project.getProperty('debugOpts');
+	}
+
+	commandLine 'docker', 'run',
+			'-h', "localhost",
+			'-e', "JAVA_OPTS=$javaOpts",
+			'-p', '5005:5005',
+			'-p', '8080:8080',
+			'-p', '8099:8099',
+			'-v', "${rootDir}/../bundles/deploy:/liferay/deploy",
+			'-d',
+			'--name', "com-liferay-adaptive-media",
+			'liferay/liferay-de:20170203072957391859963-db'
+}
+
 configure(subprojects.findAll {!it.childProjects}) {
 	apply plugin: "com.liferay.defaults.plugin"
 	apply plugin: "jacoco"
@@ -73,6 +92,10 @@ configure(subprojects.findAll {!it.childProjects}) {
 			fileName.replaceAll("(.*)-((\\d\\.{1})*\\d)\\.jar", "\$1.jar")
 		}
 	}
+
+	runDocker.dependsOn deploy
+	runDocker.dependsOn deployLibs
+	runDocker.dependsOn deployRuntimeLibs
 }
 
 repositories {
