@@ -21,7 +21,13 @@ apply plugin: "com.github.kt3k.coveralls"
 apply plugin: "com.liferay.app.defaults.plugin"
 apply plugin: "jacoco"
 
+task createTempDir(type: Exec) {
+	commandLine 'mkdir', '-m', '777', '-p', "${rootDir}/build/tmpdir"
+}
+
 task runDocker(type: Exec) {
+	dependsOn createTempDir
+
 	def javaOpts = project.getProperty('javaOpts');
 
 	if (project.hasProperty('debug')) {
@@ -37,6 +43,7 @@ task runDocker(type: Exec) {
 			'-p', '11311:11311',
 			'-v', "${rootDir}/../bundles/deploy:/liferay/deploy",
 			'-v', "${rootDir}/docker/portal-ext.properties:/liferay/portal-ext.properties",
+			'-v', "${rootDir}/build/tmpdir:${rootDir}/build/tmpdir",
 			'-d',
 			'--name', "com-liferay-adaptive-media",
 			'liferay/liferay-de:20170203072957391859963-db'
@@ -74,7 +81,10 @@ configure(subprojects.findAll {!it.childProjects}) {
 	}
 
 	testIntegration {
+		dependsOn createTempDir
+
 		ignoreFailures = false
+		systemProperty "java.io.tmpdir", "${rootDir}/build/tmpdir"
 	}
 
 	task deployLibs(type: Copy) {
