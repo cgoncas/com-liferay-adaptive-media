@@ -231,6 +231,10 @@ configure(subprojects.findAll {!it.childProjects}) {
 	runDocker.dependsOn deploy
 	runDocker.dependsOn deployLibs
 	runDocker.dependsOn deployRuntimeLibs
+
+	setUpTestableTomcat.enabled = false
+	startTestableTomcat.enabled = false
+	stopTestableTomcat.enabled = false
 }
 
 repositories {
