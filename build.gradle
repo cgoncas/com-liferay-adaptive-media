@@ -51,6 +51,14 @@ configure(subprojects.findAll {!it.childProjects}) {
 	testIntegration {
 		ignoreFailures = false
 	}
+
+	task deployRuntimeLibs(type: Copy) {
+		into liferay.deployDir
+		from configurations.runtimeLib
+		rename { String fileName ->
+			fileName.replaceAll("(.*)-((\\d\\.{1})*\\d)\\.jar", "\$1.jar")
+		}
+	}
 }
 
 repositories {
